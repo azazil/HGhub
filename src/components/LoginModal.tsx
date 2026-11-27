@@ -23,6 +23,8 @@ export default function LoginModal() {
         ? await api.login(username.trim(), password)
         : await api.register(username.trim(), password, email.trim());
       setUser(res.user as User);
+      // 拉一次完整资料，确保服务端收藏/点赞/关注同步到本地
+      api.me().then((me) => setUser(me as User)).catch(() => {});
       setPassword("");
       setLoginOpen(false);
       toast(mode === "login" ? `欢迎回来，${(res.user as User)?.nickname || username}` : "注册成功", "ok");
