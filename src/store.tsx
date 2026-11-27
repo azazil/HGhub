@@ -52,12 +52,15 @@ type Persist = {
   muteOnStartup: boolean;
   volume: number;
   searchHist: string[];
+  /** 启动时自动进入最近观看的视频并续播 */
+  resumeOnStartup: boolean;
 };
 
 const LS = "hghub_app_v1";
 const DEFAULTS: Persist = {
   likes: [], favs: [], history: [], follows: [],
   muted: true, muteOnStartup: true, volume: 0.7, searchHist: [],
+  resumeOnStartup: true,
 };
 
 /** 旧版本 history 是 number[]，读出来时升级成带进度的结构 */
@@ -125,6 +128,7 @@ type Store = {
   clean: boolean; setClean: (v: boolean | ((p: boolean) => boolean)) => void;
   muted: boolean; setMuted: (v: boolean | ((p: boolean) => boolean)) => void;
   muteOnStartup: boolean; setMuteOnStartup: (on: boolean) => void;
+  resumeOnStartup: boolean; setResumeOnStartup: (on: boolean) => void;
   volume: number; setVolume: (v: number) => void;
   searchHist: string[]; addSearch: (q: string) => void; clearSearchHist: () => void;
   strictSecurity: boolean; strictSecurityReady: boolean; securityPending: boolean; cliRelaxed: boolean; setStrictSecurity: (on: boolean) => Promise<void>;
@@ -201,6 +205,32 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const pop = useCallback(() => {
     setCleanState(false);
     setStack((s) => s.slice(0, -1));
+  }, []);
+
+  /* 启动时恢复最近一次打开的视频：只执行一次，读首次加载的本地历史。
+     进度接近片尾时从本集开头重播，避免一打开就自动结束。 */
+  const resumedRef = useRef(false);
+  useEffect(() => {
+    if (resumedRef.current) return;
+    resumedRef.current = true;
+    if (!p.resumeOnStartup) return;
+    const last = p.history[0];
+    if (!last || !last.id) return;
+    const finished = last.dur > 0 && last.t >= last.dur - 5;
+    const startEp = last.ep || 1;
+    const startTime = finished ? 0 : last.t;
+    invoke("debug_log", { msg: `[resume] id=${last.id} ep=${startEp} t=${startTime}` }).catch(() => {});
+    push({
+      kind: "feed",
+      videoIds: [last.id],
+      index: 0,
+      title: "继续观看",
+      source: "resume",
+      startEp,
+      startTime,
+    });
+    // 只在首次挂载时恢复一次；后续由用户主动导航。
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const toggleLikeLocal = useCallback((id: number) => {
@@ -281,6 +311,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const setMuteOnStartup = useCallback((on: boolean) => {
     setP((s) => ({ ...s, muteOnStartup: on }));
   }, []);
+  const setResumeOnStartup = useCallback((on: boolean) => {
+    setP((s) => ({ ...s, resumeOnStartup: on }));
+  }, []);
   const setVolume = useCallback((v: number) => {
     const volume = Math.max(0, Math.min(1, v));
     setP((s) => ({ ...s, volume, muted: volume === 0 }));
@@ -298,12 +331,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     muted: p.muted, setMuted, volume: p.volume, setVolume,
     theater, setTheater, fs, setFs, clean, setClean,
     muteOnStartup: p.muteOnStartup, setMuteOnStartup,
+    resumeOnStartup: p.resumeOnStartup, setResumeOnStartup,
     searchHist: p.searchHist, addSearch, clearSearchHist,
     strictSecurity, strictSecurityReady, securityPending, cliRelaxed, setStrictSecurity,
     toasts, toast,
   }), [theme, tab, setTab, stack, push, pop, user, loginOpen, logout,
     p, toggleLikeLocal, toggleFavLocal, toggleFollowLocal, addHistory, clearHistory,
-    setMuted, setMuteOnStartup, setVolume, addSearch, clearSearchHist, strictSecurity, strictSecurityReady, securityPending, cliRelaxed, setStrictSecurity,
+    setMuted, setMuteOnStartup, setResumeOnStartup, setVolume, addSearch, clearSearchHist, strictSecurity, strictSecurityReady, securityPending, cliRelaxed, setStrictSecurity,
     toasts, toast, theater, setTheater, fs, setFs, clean, setClean]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
