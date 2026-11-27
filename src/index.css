@@ -91,6 +91,8 @@ html.theme-light {
 }
 
 html, body, #root { height: 100%; overflow: hidden; overscroll-behavior: none; }
+/* iOS WKWebView 在底部安全区可能露出原生背景；固定到视口并铺满，避免底部白条。 */
+#root { position: fixed; inset: 0; height: auto; background: var(--p-canvas); }
 body {
   margin: 0;
   background: var(--p-canvas);

@@ -1,4 +1,5 @@
 mod api;
+mod edge_crypto;
 mod lines;
 mod logging;
 #[cfg(target_os = "macos")]
@@ -64,6 +65,24 @@ pub fn run() {
             // macOS 主窗口在此创建：先按系统红绿灯尺寸算出居中位置（见 macos_titlebar.rs）
             #[cfg(target_os = "macos")]
             macos_titlebar::create_main_window(app)?;
+            // iOS 的 WKWebView 默认把安全区算进 scrollView 的 contentInset，
+            // 导致 innerHeight 比屏幕少 status bar + home indicator（底部留白）。
+            // 关掉自动 inset，让页面铺满全屏，再用 env(safe-area-inset-*) 给控件留位。
+            #[cfg(target_os = "ios")]
+            if let Some(webview) = app.get_webview_window("main") {
+                let _ = webview.with_webview(|platform| unsafe {
+                    let wk = platform.inner() as *mut objc2::runtime::AnyObject;
+                    if wk.is_null() {
+                        return;
+                    }
+                    let scroll: *mut objc2::runtime::AnyObject = objc2::msg_send![wk, scrollView];
+                    if scroll.is_null() {
+                        return;
+                    }
+                    // UIScrollViewContentInsetAdjustmentBehavior::Never
+                    let _: () = objc2::msg_send![scroll, setContentInsetAdjustmentBehavior: 2isize];
+                });
+            }
             Ok(())
         })
         .plugin(

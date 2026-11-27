@@ -1,7 +1,7 @@
 //! 不可信目标的连接策略。FakeIP 是明确例外，不能把它当作普通私网拒绝。
 use once_cell::sync::Lazy;
 use serde_json::{json, Value};
-use std::net::{IpAddr, SocketAddr};
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::RwLock;
@@ -88,6 +88,30 @@ fn is_internal_webview_host(name: &str) -> bool {
     )
 }
 
+/// 提取 IPv6 地址里内嵌的 IPv4（IPv4-translated / IPv4-compatible）。
+/// 标准 IPv4-mapped（`::ffff:a.b.c.d`）已由 `to_ipv4_mapped` 处理。
+fn embedded_ipv4(ip: &Ipv6Addr) -> Option<Ipv4Addr> {
+    let s = ip.segments();
+    if s[0] != 0 || s[1] != 0 || s[2] != 0 || s[3] != 0 {
+        return None;
+    }
+    let octets = [
+        (s[6] >> 8) as u8,
+        (s[6] & 0xff) as u8,
+        (s[7] >> 8) as u8,
+        (s[7] & 0xff) as u8,
+    ];
+    // IPv4-translated: ::ffff:0:a.b.c.d
+    if s[4] == 0xffff && s[5] == 0 {
+        return Some(Ipv4Addr::from(octets));
+    }
+    // IPv4-compatible: ::a.b.c.d（RFC 4291 已废弃，但仍可能被构造）
+    if s[4] == 0 && s[5] == 0 && (s[6] != 0 || s[7] > 1) {
+        return Some(Ipv4Addr::from(octets));
+    }
+    None
+}
+
 pub fn allowed_ip(ip: IpAddr) -> bool {
     match ip {
         IpAddr::V4(ip) => {
@@ -110,6 +134,12 @@ pub fn allowed_ip(ip: IpAddr) -> bool {
         }
         IpAddr::V6(ip) => {
             if let Some(v4) = ip.to_ipv4_mapped() {
+                return allowed_ip(IpAddr::V4(v4));
+            }
+            // 部分代理（如 Shadowrocket 的 FakeIP）会把 IPv4 以
+            // IPv4-translated `::ffff:0:a.b.c.d` 或 IPv4-compatible `::a.b.c.d`
+            // 的形式返回。按内嵌 IPv4 套用同一套策略，避免把 FakeIP 误判为内网。
+            if let Some(v4) = embedded_ipv4(&ip) {
                 return allowed_ip(IpAddr::V4(v4));
             }
             let s = ip.segments();
@@ -162,7 +192,10 @@ fn check_ip(ip: IpAddr) -> Result<(), String> {
     if allowed_ip(ip) {
         Ok(())
     } else {
-        Err("禁止访问普通内网、回环或保留地址（仅放行 FakeIP 198.18.0.0/15）".into())
+        // 带上解析结果，便于在 debug.log 里定位是 DNS 污染还是代理 FakeIP 段不匹配。
+        Err(format!(
+            "禁止访问普通内网、回环或保留地址（仅放行 FakeIP 198.18.0.0/15）：{ip}"
+        ))
     }
 }
 
@@ -187,6 +220,18 @@ pub fn check_addresses_with_mode(addrs: &[SocketAddr], strict: bool) -> Result<(
 /// 与浏览器一致优先 IPv6：连接器以首个地址的协议族为首选，另一族在其失败后（Happy Eyeballs）兜底。
 /// 普通排序会把 IPv4 排在前面；共享 IPv4 出口被上游接口限流时，请求会挂起或返回 502/503，
 /// 而同一网络下浏览器走 IPv6 一切正常。
+/// 把内嵌 IPv4 的 IPv6 地址还原成普通 IPv4 连接，避免部分网络栈对
+/// IPv4-translated 地址处理不一致（FakeIP 场景下尤其明显）。
+fn normalize_addr(addr: SocketAddr) -> SocketAddr {
+    if let SocketAddr::V6(v6) = addr {
+        let ip = *v6.ip();
+        if let Some(v4) = ip.to_ipv4_mapped().or_else(|| embedded_ipv4(&ip)) {
+            return SocketAddr::new(IpAddr::V4(v4), addr.port());
+        }
+    }
+    addr
+}
+
 fn sort_ipv6_first(addrs: &mut [SocketAddr]) {
     addrs.sort_unstable_by_key(|addr| (addr.is_ipv4(), *addr));
 }
@@ -208,7 +253,7 @@ pub async fn resolve_target(url: &Url, strict: bool) -> Result<Vec<SocketAddr>, 
     sort_ipv6_first(&mut addrs);
     addrs.dedup();
     check_addresses_with_mode(&addrs, strict)?;
-    Ok(addrs)
+    Ok(addrs.into_iter().map(normalize_addr).collect())
 }
 
 pub fn redirect_target(current: &Url, location: &str) -> Result<Url, String> {
@@ -272,6 +317,18 @@ mod tests {
     }
 
     #[test]
+    fn embedded_ipv4_normalizes_to_ipv4() {
+        for raw in [
+            "[::ffff:0:198.18.1.120]:443",
+            "[::ffff:198.18.1.120]:443",
+            "[::198.18.1.120]:443",
+        ] {
+            let addr: SocketAddr = raw.parse().unwrap();
+            assert_eq!(normalize_addr(addr).to_string(), "198.18.1.120:443", "{raw}");
+        }
+    }
+
+    #[test]
     fn public_and_fakeip_are_allowed() {
         for ip in [
             "1.1.1.1",
@@ -280,6 +337,9 @@ mod tests {
             "198.19.255.255",
             "2606:4700:4700::1111",
             "::ffff:198.18.0.1",
+            // Shadowrocket FakeIP 实际返回的 IPv4-translated 形式
+            "::ffff:0:198.18.1.120",
+            "::198.18.1.120",
         ] {
             assert!(allowed_ip(ip.parse().unwrap()), "{ip}");
         }
@@ -310,6 +370,9 @@ mod tests {
             "ff02::1",
             "::ffff:127.0.0.1",
             "::ffff:192.168.1.1",
+            "::ffff:0:127.0.0.1",
+            "::ffff:0:192.168.1.1",
+            "::192.168.1.1",
             "64:ff9b::c0a8:101",
             "2002:c0a8:101::1",
             "2001::1",

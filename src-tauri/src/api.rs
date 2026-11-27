@@ -411,7 +411,7 @@ pub async fn api_me(state: State<'_, Api>) -> Result<Value, String> {
 #[tauri::command]
 pub async fn api_feed(state: State<'_, Api>, page: u32, size: u32) -> Result<Value, String> {
     state
-        .get(&format!("/api/videos?page={page}&size={size}"))
+        .get(&format!("/api/videos?page={page}&size={size}&sort=new"))
         .await
 }
 
@@ -422,11 +422,19 @@ pub async fn api_category(
     page: u32,
     size: u32,
 ) -> Result<Value, String> {
-    state
+    match state
         .get(&format!(
-            "/api/videos/category/{cate}?page={page}&size={size}"
+            "/api/videos/category/{cate}?page={page}&size={size}&sort=new"
         ))
         .await
+    {
+        Ok(value) => Ok(value),
+        // 站点仍保留频道入口，但部分频道内容已下线；按空列表处理，避免整页报错。
+        Err(error) if error.contains("内容已下线") || error.contains("HTTP 410") => {
+            Ok(json!({ "items": [], "total": 0, "page": page, "size": size }))
+        }
+        Err(error) => Err(error),
+    }
 }
 
 #[tauri::command]
