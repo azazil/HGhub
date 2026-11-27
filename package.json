@@ -21,6 +21,7 @@
     "macos:release": "bash scripts/build-release-macos.sh",
     "macos:install": "bash scripts/build-release-macos.sh --install",
     "ios:install": "bash scripts/build-install-ios.sh",
+    "sync:upstream": "bash scripts/sync-upstream.sh",
     "android:init": "tauri android init",
     "android:icons": "node scripts/sync-android-icons.mjs",
     "android:dev": "tauri android dev",
