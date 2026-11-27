@@ -90,3 +90,7 @@ GitHub Actions 会根据 tag 构建并发布对应 Release。
 3. 在 GitHub 仓库 Secrets 配置 `TAURI_SIGNING_PRIVATE_KEY` 和 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`
 
 在配置完成前，更新检查可能返回错误，但不会影响正常使用和发版。
+
+当前 `tauri.macos.conf.json` 和 `tauri.windows.conf.json` 里的
+`createUpdaterArtifacts` 已设为 `false`，避免本地没有签名私钥时构建失败。
+配置好自己的 updater 密钥后，把它改回 `true`，CI 才能生成可签名的更新产物。
