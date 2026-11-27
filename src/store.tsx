@@ -6,7 +6,7 @@ import type { User } from "./types";
 
 export type Platform = "android" | "ios" | "windows" | "macos" | "linux";
 export type Theme = "dark" | "light";
-export type Tab = "home" | "search" | "category" | "profile";
+export type Tab = "home" | "discover" | "search" | "category" | "profile";
 
 /** 播放页上下文：ids 是来源列表，index 是当前条目。 */
 export type FeedContext = {
@@ -28,7 +28,9 @@ export type Page =
   | { kind: "ranks"; key: string }
   | { kind: "settings"; key: string }
   | { kind: "posts"; key: string }
-  | { kind: "post"; key: string; id: number };
+  | { kind: "post"; key: string; id: number }
+  | { kind: "topic"; key: string; slug: string; title: string }
+  | { kind: "tag"; key: string; tag: string; title: string };
 
 export type PageInput =
   | { kind: "feed"; videoIds: number[]; index: number; title: string; source?: string; feedKind?: "video" | "post"; startEp?: number; startTime?: number }
@@ -36,7 +38,9 @@ export type PageInput =
   | { kind: "ranks" }
   | { kind: "settings" }
   | { kind: "posts" }
-  | { kind: "post"; id: number };
+  | { kind: "post"; id: number }
+  | { kind: "topic"; slug: string; title: string }
+  | { kind: "tag"; tag: string; title: string };
 
 export type Toast = { id: number; msg: string; icon?: "ok" | "heart" | "star" | "info" };
 

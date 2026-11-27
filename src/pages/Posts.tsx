@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api, cover, fmt, isMobile } from "../api";
-import type { Post } from "../types";
+import type { Post, PostCategory } from "../types";
 import { useStore } from "../store";
 import { Empty, Img } from "../components/ui";
 import Player from "../components/Player";
@@ -14,6 +14,8 @@ export function PostsPage({ onBack, wide }: { onBack: () => void; wide: boolean 
   const [page, setPage] = useState(0);
   const [pages, setPages] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [cate, setCate] = useState("");
+  const [cats, setCats] = useState<PostCategory[]>([]);
   const busy = useRef(false);
   const sentinel = useRef<HTMLDivElement>(null);
 
@@ -23,7 +25,9 @@ export function PostsPage({ onBack, wide }: { onBack: () => void; wide: boolean 
     setLoading(true);
     try {
       const next = page + 1;
-      const res = await api.posts(next, 20);
+      const res = cate
+        ? await api.postsByCategory(cate, next, 20)
+        : await api.posts(next, 20);
       setItems((prev) => {
         const seen = new Set(prev.map((x) => x.id));
         return [...prev, ...(res?.items || []).filter((x) => !seen.has(x.id))];
@@ -36,7 +40,32 @@ export function PostsPage({ onBack, wide }: { onBack: () => void; wide: boolean 
     }
   };
 
-  useEffect(() => { loadMore(); /* eslint-disable-next-line */ }, []);
+  useEffect(() => {
+    api.categoriesPost().then((r) => setCats(r.items || [])).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    setItems([]);
+    setPage(0);
+    setPages(1);
+    setLoading(true);
+    (async () => {
+      try {
+        const res = cate
+          ? await api.postsByCategory(cate, 1, 20)
+          : await api.posts(1, 20);
+        if (!alive) return;
+        setItems(res?.items || []);
+        setPage(1);
+        setPages(res?.pagination?.pages || 1);
+      } catch { /* ignore */ } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, [cate]);
+
   useEffect(() => {
     const el = sentinel.current;
     if (!el) return;
@@ -48,10 +77,24 @@ export function PostsPage({ onBack, wide }: { onBack: () => void; wide: boolean 
 
   return (
     <div className="absolute inset-0 bg-bg flex flex-col">
-      <div className="shrink-0 flex items-center gap-2 px-2 bg-s1" style={{ paddingTop: "var(--sat, 0px)" }}>
-        <button onClick={onBack} className="w-9 h-9 rounded-full flex items-center justify-center text-on hover:bg-s3 pressable"><IBack size={19} /></button>
-        <span className="text-[14px] font-bold text-on">黄果吃瓜</span>
-        <span className="text-[10.5px] text-mut ml-1">圈内爆料</span>
+      <div className="shrink-0 bg-s1" style={{ paddingTop: "var(--sat, 0px)" }}>
+        <div className="flex items-center gap-2 px-2">
+          <button onClick={onBack} className="w-9 h-9 rounded-full flex items-center justify-center text-on hover:bg-s3 pressable"><IBack size={19} /></button>
+          <span className="text-[14px] font-bold text-on">黄果吃瓜</span>
+          <span className="text-[10.5px] text-mut ml-1">圈内爆料</span>
+        </div>
+        <div className="flex gap-1.5 overflow-x-auto scroll-x px-2 pb-2">
+          <button onClick={() => setCate("")}
+            className={`shrink-0 h-7 px-3 rounded-(--r-ctl) text-[11.5px] pressable ${cate === "" ? "bg-primary text-on-primary font-semibold" : "bg-s2 text-on"}`}>
+            全部
+          </button>
+          {cats.map((c) => (
+            <button key={c.id} onClick={() => setCate(c.route)}
+              className={`shrink-0 h-7 px-3 rounded-(--r-ctl) text-[11.5px] pressable ${cate === c.route ? "bg-primary text-on-primary font-semibold" : "bg-s2 text-on"}`}>
+              {c.name}
+            </button>
+          ))}
+        </div>
       </div>
       <div className="flex-1 scroll-y px-3 pt-3 pb-8">
         {items.length ? (

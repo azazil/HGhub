@@ -4,12 +4,14 @@ import { isMobile, selfTest } from "./api";
 import { addPluginListener, invoke } from "@tauri-apps/api/core";
 import { runBack } from "./back";
 import Home from "./pages/Home";
+import Discover from "./pages/Discover";
 import Search, { RankPage } from "./pages/Search";
 import Category, { ChannelPage } from "./pages/Category";
 import Profile from "./pages/Profile";
 import SettingsPage from "./pages/Settings";
 import Feed from "./components/Feed";
 import { PostsPage, PostDetail } from "./pages/Posts";
+import { TagPage, TopicPage } from "./pages/DiscoverDetail";
 import LoginModal from "./components/LoginModal";
 import UpdateCenter from "./components/UpdateCenter";
 import { ToastHost } from "./components/ui";
@@ -23,6 +25,7 @@ function TabBar() {
   const { tab, setTab, theme } = useStore();
   const items: { k: Tab; label: string }[] = [
     { k: "home", label: "首页" },
+    { k: "discover", label: "发现" },
     { k: "search", label: "搜索" },
     { k: "category", label: "分类" },
     { k: "profile", label: "我的" },
@@ -78,6 +81,8 @@ function StackPage({ page, onBack, wide, top, bottomInset }: {
   if (page.kind === "settings") return <SettingsPage onBack={onBack} wide={wide} />;
   if (page.kind === "posts") return <PostsPage onBack={onBack} wide={wide} />;
   if (page.kind === "post") return <PostDetail id={page.id} onBack={onBack} active={top} />;
+  if (page.kind === "topic") return <TopicPage slug={page.slug} title={page.title} onBack={onBack} wide={wide} />;
+  if (page.kind === "tag") return <TagPage tag={page.tag} title={page.title} onBack={onBack} wide={wide} />;
   return null;
 }
 
@@ -109,8 +114,8 @@ function AppBody() {
       if (loginOpen) { if (e.key === "Escape") setLoginOpen(false); return; }
       if (e.key === "Escape") { if (stack.length) pop(); return; }
       if (e.key === "/") { e.preventDefault(); setTab("search"); return; }
-      if (["1", "2", "3", "4"].includes(e.key) && !e.repeat) {
-        setTab((["home", "search", "category", "profile"] as Tab[])[Number(e.key) - 1]);
+      if (["1", "2", "3", "4", "5"].includes(e.key) && !e.repeat) {
+        setTab((["home", "discover", "search", "category", "profile"] as Tab[])[Number(e.key) - 1]);
       }
     };
     window.addEventListener("keydown", fn);
@@ -130,6 +135,7 @@ function AppBody() {
       {!isMobile && <DesktopRail collapsed={collapsed} />}
       <div ref={mainRef} className="relative flex-1 min-w-0 overflow-hidden win-main">
         <div className={vis("home")}><Home active={pageActive && tab === "home"} bottomInset={bottomInset} /></div>
+        <div className={vis("discover")}><Discover active={pageActive && tab === "discover"} /></div>
         <div className={vis("search")}><Search active={pageActive && tab === "search"} wide={wide} /></div>
         <div className={vis("category")}><Category wide={wide} active={pageActive && tab === "category"} /></div>
         <div className={vis("profile")}><Profile wide={wide} /></div>
@@ -186,8 +192,8 @@ function ShellInner({ collapsed, theater }: { collapsed: boolean; theater: boole
       if (loginOpen) { if (e.key === "Escape") setLoginOpen(false); return; }
       if (e.key === "Escape") { if (stack.length) pop(); return; }
       if (e.key === "/") { e.preventDefault(); setTab("search"); return; }
-      if (["1", "2", "3", "4"].includes(e.key) && !e.repeat) {
-        setTab((["home", "search", "category", "profile"] as Tab[])[Number(e.key) - 1]);
+      if (["1", "2", "3", "4", "5"].includes(e.key) && !e.repeat) {
+        setTab((["home", "discover", "search", "category", "profile"] as Tab[])[Number(e.key) - 1]);
       }
     };
     window.addEventListener("keydown", fn);
@@ -202,6 +208,7 @@ function ShellInner({ collapsed, theater }: { collapsed: boolean; theater: boole
       {!theater && <DesktopRail collapsed={collapsed} />}
       <div ref={mainRef} className={`relative flex-1 min-w-0 overflow-hidden win-main ${theater ? "is-theater-main" : ""}`}>
         <div className={vis("home")}><Home active={pageActive && tab === "home"} bottomInset={14} /></div>
+        <div className={vis("discover")}><Discover active={pageActive && tab === "discover"} /></div>
         <div className={vis("search")}><Search active={pageActive && tab === "search"} wide={wide} /></div>
         <div className={vis("category")}><Category wide={wide} active={pageActive && tab === "category"} /></div>
         <div className={vis("profile")}><Profile wide={wide} /></div>

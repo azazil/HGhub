@@ -4,7 +4,7 @@ import { useStore, type Tab } from "../store";
 import { APP_VERSION } from "../api";
 import { Avatar } from "./ui";
 import {
-  IClose, IGrid, IGridF, IHome, IHomeF, IMinus, IMoon, IRestore, ISearch, ISettings, ISidebar,
+  IClose, ICompass, IGrid, IGridF, IHome, IHomeF, IMinus, IMoon, IRestore, ISearch, ISettings, ISidebar,
   ISquare, ISun, ITrophy, IUser, IUserF, Logo,
 } from "../icons";
 
@@ -68,6 +68,7 @@ export function DesktopRail({ collapsed }: { collapsed: boolean }) {
   const onTab = (key: Tab | "search") => !railPage && tab === key;
   const items: { key: Tab; label: string; Icon: typeof IHome; Filled: typeof IHomeF }[] = [
     { key: "home", label: "首页", Icon: IHome, Filled: IHomeF },
+    { key: "discover", label: "发现", Icon: ICompass, Filled: ICompass },
     { key: "category", label: "分类", Icon: IGrid, Filled: IGridF },
     { key: "profile", label: "我的", Icon: IUser, Filled: IUserF },
   ];

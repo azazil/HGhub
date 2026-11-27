@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
-  CommentPage, Detail, Paged, PlayInfo, Post, RankItem, User, VideoCard,
+  CommentPage, Detail, HomeData, Paged, PlayInfo, Post, PostCategory, RankItem,
+  SiteCategory, TagsData, Topic, User, VideoCard,
 } from "./types";
 
 /* ── 运行环境 ───────────────────────────────────────────── */
@@ -80,6 +81,37 @@ export const api = {
   feed: (page = 1, size = 20) => call<Paged<VideoCard>>("api_feed", { page, size }),
   category: (cate: string, page = 1, size = 20) =>
     call<Paged<VideoCard>>("api_category", { cate, page, size }),
+
+  /* —— 发现 / 网站公开内容 —— */
+  home: () => call<HomeData>("api_home"),
+  feedToday: (page = 1, size = 10) => call<Paged<VideoCard>>("api_feed_today", { page, size }),
+  feedRecommend: (page = 1, size = 10) =>
+    call<Paged<VideoCard>>("api_feed_recommend", { page, size }),
+  feedPostToday: (page = 1, size = 20) =>
+    call<Paged<Post>>("api_feed_post_today", { page, size }),
+  videosSorted: (
+    sort: "hot" | "new" | "latest" | "collect" | "hot_window",
+    page = 1,
+    size = 10,
+  ) => call<Paged<VideoCard>>("api_videos_sorted", { sort, page, size }),
+  videosOriginal: (page = 1, size = 10) =>
+    call<Paged<VideoCard>>("api_videos_original", { page, size }),
+  videosByTag: (tag: string, page = 1, size = 20) =>
+    call<Paged<VideoCard>>("api_videos_by_tag", { tag, page, size }),
+  videosLong: (page = 1, size = 20) =>
+    call<Paged<VideoCard>>("api_videos_long", { page, size }),
+  categoriesVideo: () => call<{ items: SiteCategory[] }>("api_categories_video"),
+  categoriesPost: () => call<{ items: PostCategory[] }>("api_categories_post"),
+  topics: (page = 1, size = 20) => call<Paged<Topic>>("api_topics", { page, size }),
+  topic: (slug: string) =>
+    call<{ topic: Topic; videos: Paged<VideoCard>; related: Topic[] }>("api_topic", { slug }),
+  tags: () => call<TagsData>("api_tags"),
+  postsByCategory: (route: string, page = 1, size = 20) =>
+    call<Paged<Post>>("api_posts_by_category", { route, page, size }),
+  postsByTag: (tag: string, page = 1, size = 20) =>
+    call<Paged<Post>>("api_posts_by_tag", { tag, page, size }),
+  searchHot: () =>
+    call<{ items: { heat: number; word: string }[] }>("api_search_hot"),
   rank: (kind: "hot" | "recommend" | "potential") =>
     call<{ type: string; items: RankItem[] }>("api_rank", { kind }),
   search: (q: string, page = 1, size = 20) =>

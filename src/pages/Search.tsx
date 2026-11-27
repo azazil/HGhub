@@ -17,8 +17,18 @@ export default function Search({ active, wide }: { active: boolean; wide: boolea
   const [pages, setPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [hotTags, setHotTags] = useState<string[]>(HOT_TAGS);
   const inputRef = useRef<HTMLInputElement>(null);
   const busy = useRef(false);
+
+  useEffect(() => {
+    api.searchHot()
+      .then((r) => {
+        const words = (r.items || []).map((x) => x.word).filter(Boolean);
+        if (words.length) setHotTags(words.slice(0, 12));
+      })
+      .catch(() => { /* 离线时保留内置标签 */ });
+  }, []);
 
   useEffect(() => {
     if (active && !/Android/i.test(navigator.userAgent)) inputRef.current?.focus();
@@ -99,7 +109,7 @@ export default function Search({ active, wide }: { active: boolean; wide: boolea
                 <button onClick={() => push({ kind: "ranks" })} className="text-[11px] text-primary font-semibold pressable">完整榜单 ›</button>
               </div>
               <div className="flex flex-wrap gap-2 mt-3">
-                {HOT_TAGS.map((t) => (
+                {hotTags.map((t) => (
                   <button key={t} onClick={() => { setQ(t); submit(t); }}
                     className="px-3 h-7 rounded-(--r-ctl) bg-s3 text-[12px] text-on/85 pressable">{t}</button>
                 ))}
@@ -108,7 +118,7 @@ export default function Search({ active, wide }: { active: boolean; wide: boolea
 
             <div className="flex items-center justify-between mt-6 mb-2.5">
               <span className="text-[13px] font-bold text-on">为你推荐</span>
-              <button onClick={() => submit(HOT_TAGS[Math.floor(Math.random() * HOT_TAGS.length)])}
+              <button onClick={() => submit(hotTags[Math.floor(Math.random() * hotTags.length)])}
                 className="flex items-center gap-1 text-[11.5px] text-mut pressable"><IRefresh size={13} />换一批</button>
             </div>
             <p className="text-[11.5px] text-dim leading-relaxed">

@@ -634,6 +634,136 @@ pub async fn api_post_comments(
         .get(&format!("/api/posts/{id}/comments?page={page}&size={size}"))
         .await
 }
+/* ───────────────────────── 发现 / 首页聚合 ───────────────────────── */
+
+#[tauri::command]
+pub async fn api_home(state: State<'_, Api>) -> Result<Value, String> {
+    state.get("/api/home").await
+}
+
+#[tauri::command]
+pub async fn api_feed_today(state: State<'_, Api>, page: u32, size: u32) -> Result<Value, String> {
+    state
+        .get(&format!("/api/feed/today?page={page}&size={size}"))
+        .await
+}
+
+#[tauri::command]
+pub async fn api_feed_recommend(state: State<'_, Api>, page: u32, size: u32) -> Result<Value, String> {
+    state
+        .get(&format!("/api/feed/recommend?page={page}&size={size}"))
+        .await
+}
+
+#[tauri::command]
+pub async fn api_feed_post_today(state: State<'_, Api>, page: u32, size: u32) -> Result<Value, String> {
+    state
+        .get(&format!("/api/feed/post/today?page={page}&size={size}"))
+        .await
+}
+
+#[tauri::command]
+pub async fn api_videos_sorted(
+    state: State<'_, Api>,
+    sort: String,
+    page: u32,
+    size: u32,
+) -> Result<Value, String> {
+    let sort = match sort.as_str() {
+        "hot" | "new" | "latest" | "collect" | "hot_window" => sort,
+        _ => "new".to_string(),
+    };
+    state
+        .get(&format!("/api/videos?page={page}&size={size}&sort={sort}"))
+        .await
+}
+
+#[tauri::command]
+pub async fn api_videos_original(state: State<'_, Api>, page: u32, size: u32) -> Result<Value, String> {
+    state
+        .get(&format!("/api/videos?page={page}&size={size}&sort=new&is_original=1"))
+        .await
+}
+
+#[tauri::command]
+pub async fn api_videos_by_tag(
+    state: State<'_, Api>,
+    tag: String,
+    page: u32,
+    size: u32,
+) -> Result<Value, String> {
+    let encoded: String = url::form_urlencoded::byte_serialize(tag.as_bytes()).collect();
+    state
+        .get(&format!("/api/videos/tag/{encoded}?page={page}&size={size}"))
+        .await
+}
+
+#[tauri::command]
+pub async fn api_videos_long(state: State<'_, Api>, page: u32, size: u32) -> Result<Value, String> {
+    state
+        .get(&format!("/api/videos/long?page={page}&size={size}"))
+        .await
+}
+
+#[tauri::command]
+pub async fn api_categories_video(state: State<'_, Api>) -> Result<Value, String> {
+    state.get("/api/site/categories/video").await
+}
+
+#[tauri::command]
+pub async fn api_categories_post(state: State<'_, Api>) -> Result<Value, String> {
+    state.get("/api/site/categories/post").await
+}
+
+#[tauri::command]
+pub async fn api_topics(state: State<'_, Api>, page: u32, size: u32) -> Result<Value, String> {
+    state
+        .get(&format!("/api/topics?page={page}&size={size}"))
+        .await
+}
+
+#[tauri::command]
+pub async fn api_topic(state: State<'_, Api>, slug: String) -> Result<Value, String> {
+    let encoded: String = url::form_urlencoded::byte_serialize(slug.as_bytes()).collect();
+    state.get(&format!("/api/topics/{encoded}")).await
+}
+
+#[tauri::command]
+pub async fn api_tags(state: State<'_, Api>) -> Result<Value, String> {
+    state.get("/api/tags").await
+}
+
+#[tauri::command]
+pub async fn api_posts_by_category(
+    state: State<'_, Api>,
+    route: String,
+    page: u32,
+    size: u32,
+) -> Result<Value, String> {
+    let encoded: String = url::form_urlencoded::byte_serialize(route.as_bytes()).collect();
+    state
+        .get(&format!("/api/posts/category/{encoded}?page={page}&size={size}"))
+        .await
+}
+
+#[tauri::command]
+pub async fn api_posts_by_tag(
+    state: State<'_, Api>,
+    tag: String,
+    page: u32,
+    size: u32,
+) -> Result<Value, String> {
+    let encoded: String = url::form_urlencoded::byte_serialize(tag.as_bytes()).collect();
+    state
+        .get(&format!("/api/posts/tag/{encoded}?page={page}&size={size}"))
+        .await
+}
+
+#[tauri::command]
+pub async fn api_search_hot(state: State<'_, Api>) -> Result<Value, String> {
+    state.get("/api/search/hot").await
+}
+
 #[cfg(test)]
 mod tests {
     use super::{has_play_url, is_newer, normalize_play_info};

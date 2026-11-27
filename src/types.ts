@@ -135,3 +135,76 @@ export type User = {
     like_video_episodes: { video_id: number; ep: number }[];
   };
 };
+
+/* ───────────── 发现 / 网站公开内容 ───────────── */
+
+export type HomeBanner = {
+  id: number;
+  title: string;
+  video_id: number;
+  image: string;
+  score?: number;
+  desc?: string;
+};
+
+export type HomeVideo = {
+  id: number;
+  title: string;
+  cover: string;
+  hot: number;
+  duration?: string;
+  cate_id?: number;
+  score?: number;
+  tags?: string[];
+  desc?: string;
+  badge?: string;
+  is_hot?: number;
+  episode_count?: number;
+  is_finished?: boolean | number;
+};
+
+export type HomeCateRec = { cate_id: number; cate_name: string; videos: HomeVideo[] };
+export type HomeTopic = {
+  id: number;
+  title: string;
+  slug: string;
+  cover: string;
+  intro?: string;
+  video_count?: number;
+};
+
+export type HomeData = {
+  banners: HomeBanner[];
+  featured: HomeVideo[];
+  latest: HomeVideo[];
+  cate_rec: HomeCateRec[];
+  topic_rec: HomeTopic[];
+};
+
+export type Topic = HomeTopic & { faq?: { q: string; a: string }[] };
+
+export type TagItem = { id?: number; name: string; code?: string };
+export type TagCategory = {
+  id: number;
+  code: string;
+  name: string;
+  sort?: number;
+  tags: TagItem[];
+};
+export type TagsData = { categories: TagCategory[]; hot: TagItem[] };
+
+export type PostCategory = {
+  id: number;
+  name: string;
+  route: string;
+  sort?: number;
+  intro?: string;
+};
+
+export type SiteCategory = {
+  id: number;
+  index?: number;
+  name: string;
+  route: string;
+  sort?: number;
+};
