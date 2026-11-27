@@ -574,6 +574,7 @@ fn edge_scope(method: &str, path: &str, token: Option<&str>) -> EdgeScope {
     if method.eq_ignore_ascii_case("GET") {
         let user_get = path == "/api/account/me"
             || path == "/api/whoami"
+            || path == "/api/videos/following"
             || path.starts_with("/api/users/me/")
             || path.contains("/liked")
             || path.contains("interaction-state")

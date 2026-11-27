@@ -172,7 +172,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     api.boot()
       .then((r) => {
-        if (r.user && (r.user as User).id) setUser(r.user as User);
+        if (r.user && (r.user as User).id) {
+          setUser(r.user as User);
+          // 刷新一次完整资料，拿到服务端收藏/点赞/关注列表；
+          // token 已失效（401）时清掉本地假登录态，避免“看起来已登录但看不到用户内容”。
+          api.me()
+            .then((me) => setUser(me as User))
+            .catch((e) => {
+              if (String((e as Error)?.message || e).includes("401")) {
+                setUser(null);
+                api.logout().catch(() => {});
+              }
+            });
+        }
         if (typeof r.strict_security === "boolean") {
           setStrictSecurityState(r.strict_security);
           setHtmlStrictSecurity(r.strict_security);
@@ -182,6 +194,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       })
       .catch(() => { /* 离线也能用 */ });
   }, []);
+
+  /* 登录后把服务端收藏/点赞/关注合并进本地列表，Profile 和互动状态立即同步。 */
+  useEffect(() => {
+    const it = user?.interactions;
+    if (!it) return;
+    setP((s) => {
+      const favs = Array.from(new Set([...(it.favorite_video_ids || []), ...s.favs]));
+      const likes = Array.from(new Set([...(it.like_video_ids || []), ...s.likes]));
+      const follows = Array.from(new Set([...(it.follow_user_ids || []), ...s.follows]));
+      if (favs.length === s.favs.length && likes.length === s.likes.length && follows.length === s.follows.length) return s;
+      return { ...s, favs, likes, follows };
+    });
+  }, [user]);
 
   const setStrictSecurity = useCallback(async (on: boolean) => {
     if (!strictSecurityReady) throw new Error("安全设置尚未读取，请重新启动应用");

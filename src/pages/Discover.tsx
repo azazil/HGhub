@@ -80,7 +80,7 @@ function PostRow({ posts, onOpen }: { posts: Post[]; onOpen: (p: Post) => void }
 }
 
 export default function Discover({ active }: { active: boolean }) {
-  const { push } = useStore();
+  const { push, user } = useStore();
   const [home, setHome] = useState<HomeData | null>(null);
   const [today, setToday] = useState<VideoCard[]>([]);
   const [hot, setHot] = useState<VideoCard[]>([]);
@@ -89,15 +89,18 @@ export default function Discover({ active }: { active: boolean }) {
   const [tags, setTags] = useState<TagsData | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [cats, setCats] = useState<SiteCategory[]>([]);
+  const [following, setFollowing] = useState<VideoCard[]>([]);
+  const [forYou, setForYou] = useState<VideoCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [reload, setReload] = useState(0);
-  const loadedRef = useRef(false);
+  const loadedRef = useRef("");
 
   useEffect(() => {
     if (!active) return;
-    if (loadedRef.current && reload === 0) return;
-    loadedRef.current = true;
+    const key = user?.id ? String(user.id) : "guest";
+    if (loadedRef.current === key && reload === 0) return;
+    loadedRef.current = key;
     let alive = true;
     setLoading(true);
     setError("");
@@ -124,9 +127,20 @@ export default function Discover({ active }: { active: boolean }) {
       if (cs.status === "fulfilled") setCats(cs.value.items || []);
       setLoading(false);
     });
+    if (user) {
+      api.videosFollowing(1, 10)
+        .then((r) => { if (alive) setFollowing(r.items || []); })
+        .catch(() => {});
+      api.feedRecommend(1, 10)
+        .then((r) => { if (alive) setForYou(r.items || []); })
+        .catch(() => {});
+    } else {
+      setFollowing([]);
+      setForYou([]);
+    }
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, reload]);
+  }, [active, reload, user?.id]);
 
   const openFeed = (ids: number[], index: number, title = "发现") => {
     if (!ids.length) return;
@@ -197,8 +211,20 @@ export default function Discover({ active }: { active: boolean }) {
           </Section>
         )}
 
+        {!!(user && following.length) && (
+          <Section title="关注" sub="你关注的作者更新">
+            <Row videos={following} onOpen={(v) => openCards(following, v, "关注")} />
+          </Section>
+        )}
+
+        {!!(user && forYou.length) && (
+          <Section title="为你推荐" sub="根据你的观看与收藏">
+            <Row videos={forYou} onOpen={(v) => openCards(forYou, v, "为你推荐")} />
+          </Section>
+        )}
+
         {!!featured.length && (
-          <Section title="推荐" sub="编辑精选">
+          <Section title={user ? "精选" : "推荐"} sub="编辑精选">
             <Row videos={featured} onOpen={(v) => openCards(featured, v, "推荐")} />
           </Section>
         )}

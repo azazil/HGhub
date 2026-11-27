@@ -699,6 +699,13 @@ pub async fn api_videos_by_tag(
 }
 
 #[tauri::command]
+pub async fn api_videos_following(state: State<'_, Api>, page: u32, size: u32) -> Result<Value, String> {
+    state
+        .get(&format!("/api/videos/following?page={page}&size={size}"))
+        .await
+}
+
+#[tauri::command]
 pub async fn api_videos_long(state: State<'_, Api>, page: u32, size: u32) -> Result<Value, String> {
     state
         .get(&format!("/api/videos/long?page={page}&size={size}"))

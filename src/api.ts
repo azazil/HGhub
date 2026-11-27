@@ -98,6 +98,8 @@ export const api = {
     call<Paged<VideoCard>>("api_videos_original", { page, size }),
   videosByTag: (tag: string, page = 1, size = 20) =>
     call<Paged<VideoCard>>("api_videos_by_tag", { tag, page, size }),
+  videosFollowing: (page = 1, size = 10) =>
+    call<Paged<VideoCard>>("api_videos_following", { page, size }),
   videosLong: (page = 1, size = 20) =>
     call<Paged<VideoCard>>("api_videos_long", { page, size }),
   categoriesVideo: () => call<{ items: SiteCategory[] }>("api_categories_video"),

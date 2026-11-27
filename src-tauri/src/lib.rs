@@ -182,6 +182,7 @@ pub fn run() {
             api::api_videos_sorted,
             api::api_videos_original,
             api::api_videos_by_tag,
+            api::api_videos_following,
             api::api_videos_long,
             api::api_categories_video,
             api::api_categories_post,
