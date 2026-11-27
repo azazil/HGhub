@@ -1,9 +1,10 @@
 # HGhub (跨平台桌面与移动端社区移植增强版)
 
-**派生自上游仓库 / Forked from：[Minireel/HGhub](https://github.com/Minireel/HGhub)**
+> 🔗 **原项目官方仓库 / Upstream Repository**：[https://github.com/Minireel/HGhub](https://github.com/Minireel/HGhub)  
+> 📌 **项目定位**：本项目派生（Fork）自官方源码，为社区全平台（macOS / Windows / Linux / iOS）预编译发行与体验增强版本。
 
 > [!IMPORTANT]
-> **本仓库为 [Minireel/HGhub](https://github.com/Minireel/HGhub) 的社区派生与跨平台全端移植增强版本。**
+> **本仓库代码与架构派生自上游原项目 [Minireel/HGhub](https://github.com/Minireel/HGhub)。**
 > 
 > 由于上游官方遵循 Source-only 策略仅发布源码标签、不分发预编译安装包，本仓库致力于为 **macOS（Apple Silicon & Intel）**、**Windows on ARM (WoA)**、**Linux（x86_64 & ARM64）** 桌面端以及 **iOS (IPA 免签生产包)** 提供开箱即用的预编译安装包与自动化 CI 构建工作流。
 > 
@@ -14,24 +15,37 @@
 ## 🚀 快速下载安装包 (Releases)
 
 ### 💻 桌面端安装包
-👉 **[前往 GitHub Releases 页面下载最新桌面版 (v1.2.1-desktop)](https://github.com/Kepler16f/HGhub/releases/tag/v1.2.1-desktop)**
+👉 **[前往 GitHub Releases 页面下载最新桌面版 (v1.2.2)](https://github.com/Kepler16f/HGhub/releases/tag/v1.2.2)**
 
 | 操作系统 | 目标架构 | 软件包类型 | 下载文件名 | 适用设备 / 说明 |
 | :--- | :--- | :--- | :--- | :--- |
-| **macOS** | Apple Silicon | DMG 镜像 | `HGhub_1.2.1_arm64.dmg` | **Mac 推荐**：M1 / M2 / M3 / M4 系列芯片机型 |
-| **macOS** | Intel | DMG 镜像 | `HGhub_1.2.1_x64.dmg` | 传统 Intel 处理器 Mac 机型 |
-| **Windows** | ARM64 (WoA) | 安装包 / 便携包 | `HGhub_1.2.1_arm64_setup.exe`<br>`HGhub_1.2.1_arm64_portable.zip` | **Windows on ARM 原生**：骁龙 X Elite / 微软 Surface 等 |
-| **Linux** | x86_64 | deb / AppImage | `HGhub_1.2.1_amd64.deb`<br>`HGhub_1.2.1_amd64.AppImage` | Ubuntu / Debian / Deepin / Mint x86_64 桌面端 |
-| **Linux** | ARM64 (aarch64) | deb / AppImage | `HGhub_1.2.1_arm64.deb`<br>`HGhub_1.2.1_arm64.AppImage` | 树莓派 4/5、ARM64 架构 Linux 电脑与掌机 |
+| **macOS** | Apple Silicon | DMG 镜像 | `HGhub_1.2.2_arm64.dmg` | **Mac 推荐**：M1 / M2 / M3 / M4 系列芯片机型 |
+| **macOS** | Intel | DMG 镜像 | `HGhub_1.2.2_x64.dmg` | 传统 Intel 处理器 Mac 机型 |
+| **Windows** | ARM64 (WoA) | 安装包 / 便携包 | `HGhub_1.2.2_arm64_setup.exe`<br>`HGhub_1.2.2_arm64_portable.zip` | **Windows on ARM 原生**：骁龙 X Elite / 微软 Surface 等 |
+| **Windows** | x86_64 | 安装包 / 便携包 | `HGhub_1.2.2_x64_setup.exe`<br>`HGhub_1.2.2_x64_portable.zip` | 常规 Intel / AMD Windows 电脑 |
+| **Linux** | x86_64 | deb / AppImage | `HGhub_1.2.2_amd64.deb`<br>`HGhub_1.2.2_amd64.AppImage` | Ubuntu / Debian / Deepin / Mint x86_64 桌面端 |
+| **Linux** | ARM64 (aarch64) | deb / AppImage | `HGhub_1.2.2_arm64.deb`<br>`HGhub_1.2.2_arm64.AppImage` | 树莓派 4/5、ARM64 架构 Linux 电脑与掌机 |
 
 ---
 
 ### 📱 iOS 移动端安装包
-👉 **[前往 GitHub Releases 页面下载 iOS 安装包 (1.2.1-ios)](https://github.com/Kepler16f/HGhub/releases/tag/v1.2.1-ios)**
+👉 **[前往 GitHub Releases 页面下载 iOS 安装包 (1.2.2-ios)](https://github.com/Kepler16f/HGhub/releases/tag/v1.2.2-ios)**
 
 | 操作系统 | 软件包类型 | 下载文件名 | 适用平台 / 安装方式 |
 | :--- | :--- | :--- | :--- |
-| **iOS** (16+) | 未签名生产包 (`.ipa`) | `HGhub_1.2.1_ios.ipa` | 支持 **TrollStore（巨魔）** 永久安装、AltStore / SideStore / 轻松签自签安装 |
+| **iOS** (16+) | 未签名生产包 (`.ipa`) | `HGhub_1.2.2_ios.ipa` | 支持 **TrollStore（巨魔）** 永久安装、AltStore / SideStore / 轻松签自签安装 |
+
+---
+
+### 🔄 应用内自动更新（v1.2.2 起）
+
+桌面端在「设置 → 其他 → 检查更新」中即可检查新版本：
+
+- 发现新版本会弹出**更新窗口**，显示版本号、更新说明与**下载进度条**；
+- 可选择「立即下载」或在「后台下载」——关闭窗口后右下角仍有**悬浮进度通知**，下载不中断；
+- 下载完成并校验签名后，提示「立即重启安装」，应用会自动重启完成更新；
+- 「自动下载更新」开关默认开启：启动时自动检查，并在后台静默下载，完成后弹窗提醒；
+- 更新包经 minisign 签名校验，校验失败不会安装。
 
 ---
 
@@ -58,8 +72,8 @@ sudo xattr -rd com.apple.quarantine /Applications/HGhub.app
 针对搭载 **高通骁龙 X Elite / 骁龙 8cx / 微软 SQ 系列芯片** 的 Windows on ARM 设备（如 Surface Pro、Surface Laptop 等）：
 - **原生架构执行**：针对 `aarch64-pc-windows-msvc` 原生编译，无需经过 Prism / x86 仿真转译层，CPU 占用极低、功耗大幅优化且界面流畅响应。
 - **便携版与安装版双选**：
-  - `HGhub_1.2.1_arm64_setup.exe`：全自动引导安装程序，创建开始菜单与桌面快捷方式；
-  - `HGhub_1.2.1_arm64_portable.zip`：免安装便携绿色版，解压到任意文件夹双击 `HGhub.exe` 即可直接运行。
+  - `HGhub_1.2.2_arm64_setup.exe`：全自动引导安装程序，创建开始菜单与桌面快捷方式；
+  - `HGhub_1.2.2_arm64_portable.zip`：免安装便携绿色版，解压到任意文件夹双击 `HGhub.exe` 即可直接运行。
 
 ---
 
@@ -69,10 +83,10 @@ sudo xattr -rd com.apple.quarantine /Applications/HGhub.app
 在终端中进入安装包所在目录执行：
 ```bash
 # x86_64
-sudo dpkg -i HGhub_1.2.1_amd64.deb
+sudo dpkg -i HGhub_1.2.2_amd64.deb
 
 # ARM64
-sudo dpkg -i HGhub_1.2.1_arm64.deb
+sudo dpkg -i HGhub_1.2.2_arm64.deb
 
 # 若提示缺少底层系统库（如 webkit2gtk），执行以下命令自动修复依赖：
 sudo apt-get install -f
@@ -81,8 +95,8 @@ sudo apt-get install -f
 ### 2. 通用免安装版 (`.AppImage`)
 直接赋予执行权限后双击或终端运行：
 ```bash
-chmod +x HGhub_1.2.1_*.AppImage
-./HGhub_1.2.1_*.AppImage
+chmod +x HGhub_1.2.2_*.AppImage
+./HGhub_1.2.2_*.AppImage
 ```
 
 ---
@@ -90,7 +104,7 @@ chmod +x HGhub_1.2.1_*.AppImage
 ## 📱 iOS (IPA) 侧载安装与专属特性说明
 
 ### 1. 安装方式
-- **TrollStore（巨魔商店）**：下载 `HGhub_1.2.1_ios.ipa` 后分享至巨魔商店，一键永久免签安装，无证书过期失效困扰；
+- **TrollStore（巨魔商店）**：下载 `HGhub_1.2.2_ios.ipa` 后分享至巨魔商店，一键永久免签安装，无证书过期失效困扰；
 - **个人自签工具**：使用 AltStore、SideStore 或 Sideloadly，通过个人 Apple ID 每 7 天续签；
 - **企业证书 / 签名软件**：导入轻松签（ESign）、牛蛙助手、Feather、全能签直接签名安装。
 
@@ -145,7 +159,7 @@ pnpm linux:build             # Linux (deb + AppImage)
 2. 本项目为个人与社区的技术探索、跨平台交互实验项目。维护者与开发者不运营任何内容托管服务，不参与外部音视频内容的制作、上传或分发。
 3. 软件按现状（AS-IS）提供，不承诺任何外部接口的持续有效性。涉及第三方内容或标识的权利均归原权利人所有。
 
-## 👏 致谢
+## 👏 致谢与原项目
 
-- 感谢上游项目 [Minireel/HGhub](https://github.com/Minireel/HGhub) 团队的原生实现与架构设计。
-- 感谢 [Tauri](https://tauri.app/) 团队提供优秀的跨平台桌面框架。
+- **原项目官方仓库**：[Minireel/HGhub](https://github.com/Minireel/HGhub)（源码主仓库，感谢原作者团队的原生实现与架构设计）
+- **跨平台应用框架**：[Tauri](https://tauri.app/)（优秀的 Rust + Webview 跨平台框架）

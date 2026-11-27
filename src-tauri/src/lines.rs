@@ -3,8 +3,10 @@
 //! 上游只是域名在变，请求链路与数据模型完全一致，所以「切线路」等价于换 `net::base()`。
 //! 镜像地址来自 <https://huang-guo.pages.dev/>：那个页面本身是空壳，真正的清单在
 //! `publish.js` 里（`var urls` 域名数组 + `var subdomains` 子域数组，页面自己随机拼）。
+//!
 //! 2026-11：旧发布页 `huangguoai.pages.dev` 下线，官方迁到 `huang-guo.pages.dev`；
 //! 固定线路的 `/api/edge/request` 网关同时停用，客户端改用新版 scope 接口。
+//! 镜像根域名会随 publish.js 轮换（从新 publish.js 自动读取，无需改代码）。
 
 use serde_json::{json, Value};
 use std::time::{Duration, Instant};
